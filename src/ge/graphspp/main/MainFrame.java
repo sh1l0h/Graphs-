@@ -12,12 +12,15 @@ public class MainFrame extends JFrame {
 	public final static int NODE_RADIUS = 10;
 	public final static Color NODE_COLOR = Color.RED;
 	public final static Color NODE_COLOR_SELECTED = Color.GRAY;
+	public final static String NODE_DEFAULT_LABLE = "Default Lable";
 	public final static Color EDGE_COLOR = Color.BLACK;
 
 	public static MainFrame mainFrame = null;
 
 	private Display display;
+	
 	private ArrayList<Node> nodes;
+	private ArrayList<Node> selectedNodes;
 	private ArrayList<Edge> edges;
 
 	public MainFrame() {
@@ -26,6 +29,7 @@ public class MainFrame extends JFrame {
 
 		nodes = new ArrayList<Node>();
 		edges = new ArrayList<Edge>();
+		selectedNodes  = new ArrayList<Node>();
 
 		display = new Display();
 
@@ -42,6 +46,11 @@ public class MainFrame extends JFrame {
 
 
 	}
+	
+	public ArrayList<Node> getSelectedNodes() {
+		return selectedNodes;
+	}
+	
 
 	public ArrayList<Node> getNodes() {
 		return nodes;
