@@ -32,18 +32,14 @@ public class MainFrame extends JFrame {
 		selectedNodes  = new ArrayList<Node>();
 
 		display = new Display();
-
+		
+		this.setTitle("Graphs++");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setSize(WIDTH, HEIGHT);
-
 		this.add(display);
 		this.pack();
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
-
-		nodes.add(new Node(100, 100, "1"));
-		nodes.add(new Node(200, 200, "2"));
-
 
 	}
 	

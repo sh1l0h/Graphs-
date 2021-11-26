@@ -5,7 +5,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.awt.event.MouseEvent;
+import java.text.Collator;
+
 import javax.swing.JPanel;
 import javax.swing.event.MouseInputListener;
 import java.awt.RenderingHints;
@@ -40,6 +43,11 @@ public class Display extends JPanel implements MouseInputListener, KeyListener {
 	private int selectingMinY;
 	private int selectingMaxX;
 	private int selectingMaxY;
+
+	private boolean isXLocked;
+	private boolean isYLocked;
+	private int movingStartX;
+	private int movingStartY;
 
 	public Display() {
 		setPreferredSize(new Dimension(MainFrame.WIDTH, MainFrame.HEIGHT));
@@ -94,11 +102,16 @@ public class Display extends JPanel implements MouseInputListener, KeyListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		isLocked = e.getButton() == MouseEvent.BUTTON1 && isOverNode;
+
+		if (e.getButton() == MouseEvent.BUTTON1 && isOverNode) {
+			movingStartX = overNode.getX();
+			movingStartY = overNode.getY();
+			isLocked = true;
+		}
 
 		if (e.getButton() == MouseEvent.BUTTON1 && !isOverNode) {
 			deselect();
-			
+
 			startedSelecting = true;
 			selectingStartX = e.getX();
 			selectingStartY = e.getY();
@@ -136,8 +149,19 @@ public class Display extends JPanel implements MouseInputListener, KeyListener {
 		int mouseY = e.getY();
 
 		if (isLocked) {
-			overNode.setX(mouseX);
-			overNode.setY(mouseY);
+			
+			if(isXLocked && isKeyPressed) 
+				overNode.setX(movingStartX);
+			else {
+				overNode.setX(mouseX);
+				isXLocked = false;
+			}
+			if(isYLocked && isKeyPressed) 
+				overNode.setY(movingStartY);
+			else {
+				overNode.setY(mouseY);
+				isYLocked = false;
+			}
 			repaint();
 		}
 
@@ -174,6 +198,10 @@ public class Display extends JPanel implements MouseInputListener, KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		
+		isXLocked = isLocked && e.getKeyCode() == KeyEvent.VK_X;
+		isYLocked = isLocked && e.getKeyCode() == KeyEvent.VK_Y;
+		
 		if (!isKeyPressed && !isOverNode && e.getKeyCode() == KeyEvent.VK_A) {
 			Node newNode = new Node(mouseX, mouseY, MainFrame.NODE_DEFAULT_LABLE);
 			nodes.add(newNode);
@@ -193,9 +221,9 @@ public class Display extends JPanel implements MouseInputListener, KeyListener {
 				for (int j = i + 1; j < selectedNodes.size(); j++) {
 					Node temp = selectedNodes.get(j);
 
-					if(current.hasNeighbor(temp)) 
+					if (current.hasNeighbor(temp))
 						continue;
-						
+
 					Edge newEdge = new Edge(current, temp, 1);
 
 					current.addNeibor(temp);
@@ -208,7 +236,62 @@ public class Display extends JPanel implements MouseInputListener, KeyListener {
 			}
 			deselect();
 			repaint();
+		} else if (!isKeyPressed && isSelected && e.getKeyCode() == KeyEvent.VK_V && selectedNodes.size() > 1) {
+
+			int sumX = 0;
+			int maxY = Integer.MIN_VALUE;
+			int minY = Integer.MAX_VALUE;
+
+			for (Node i : selectedNodes) {
+				sumX += i.getX();
+
+				if (i.getY() > maxY)
+					maxY = i.getY();
+				if (i.getY() < minY)
+					minY = i.getY();
+			}
+
+			int dis = (maxY - minY) / (selectedNodes.size() - 1);
+			int x = sumX / selectedNodes.size();
+
+			Collections.sort(selectedNodes, new Node.SortByPosY());
+			
+			for (int i = 0; i < selectedNodes.size(); i++) {
+				selectedNodes.get(i).setX(x);
+				selectedNodes.get(i).setY(minY + dis * i);
+			}
+
+			deselect();
+			repaint();
+		} else if (!isKeyPressed && isSelected && e.getKeyCode() == KeyEvent.VK_H  && selectedNodes.size() > 1) {
+
+			int sumY = 0;
+			int maxX = Integer.MIN_VALUE;
+			int minX = Integer.MAX_VALUE;
+
+			for (Node i : selectedNodes) {
+				sumY += i.getY();
+
+				if (i.getX() > maxX)
+					maxX = i.getX();
+				if (i.getX() < minX)
+					minX = i.getX();
+			}
+
+			int dis = (maxX - minX) / (selectedNodes.size() - 1);
+			int y = sumY / selectedNodes.size();
+
+			Collections.sort(selectedNodes, new Node.SortByPosX());
+			
+			for (int i = 0; i < selectedNodes.size(); i++) {
+				selectedNodes.get(i).setY(y);
+				selectedNodes.get(i).setX(minX + dis * i);
+			}
+
+			deselect();
+			repaint();
 		}
+		
 		
 		isKeyPressed = true;
 	}
@@ -223,12 +306,12 @@ public class Display extends JPanel implements MouseInputListener, KeyListener {
 	public void keyTyped(KeyEvent arg0) {
 
 	}
-	
+
 	public void deselect() {
-		
-		for(Node i : selectedNodes)
+
+		for (Node i : selectedNodes)
 			i.setSelected(false);
-		
+
 		selectedNodes.clear();
 	}
 

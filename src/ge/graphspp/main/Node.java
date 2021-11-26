@@ -2,8 +2,29 @@ package ge.graphspp.main;
 
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class Node {
+	
+	public static final class SortByPosX implements Comparator<Node>{
+
+		@Override
+		public int compare(Node a, Node b) {
+			return a.x - b.x;
+		}
+		
+		
+	}
+	
+	public static final class SortByPosY implements Comparator<Node>{
+
+		@Override
+		public int compare(Node a, Node b) {
+			return a.y - b.y;
+		}
+		
+		
+	}
 
 	private int x;
 	private int y;
